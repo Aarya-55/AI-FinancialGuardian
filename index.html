@@ -1,0 +1,91 @@
+"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Personal Expense Tracker 💵</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0d0d0d; color: #e5e5e5; font-family: monospace; }
+        .excel-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+        .excel-table th, .excel-table td { border: 1px solid #27272a; padding: 8px 12px; }
+        .excel-table th { background-color: #18181b; color: #22c55e; text-align: left; }
+        .excel-table tr:nth-child(even) { background-color: #121212; }
+        .excel-table input { background: transparent; color: white; width: 100%; outline: none; }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-6xl mx-auto space-y-6">
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b border-green-500/30 pb-4">
+            <h1 class="text-2xl font-bold text-green-500 tracking-wider">💵 AI/ML EXPENSE SPREADSHEET DASHBOARD 💰</h1>
+            <div id="status" class="text-sm bg-zinc-900 border border-green-500/50 px-3 py-1 rounded text-green-400">
+                Status: Connected
+            </div>
+        </div>
+
+        <!-- ML Suggestion Banner -->
+        <div class="bg-zinc-900 border-l-4 border-green-500 p-4 rounded shadow">
+            <h3 class="text-green-400 font-semibold text-sm uppercase tracking-wide">🤖 AI Spending Recommendation:</h3>
+            <p id="ml-suggestion" class="text-white mt-1 text-base">💵 Awaiting incoming transactions...</p>
+        </div>
+
+        <!-- Excel-Like Grid -->
+        <div class="overflow-x-auto bg-zinc-950 border border-zinc-800 rounded-lg p-4">
+            <table class="excel-table" id="expense-table">
+                <thead>
+                    <tr>
+                        <th>Row</th>
+                        <th>User / Fingerprint ID</th>
+                        <th>Card UID</th>
+                        <th>Category</th>
+                        <th>Expense Amount (\$)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+            
+            <div class="mt-4 flex justify-between items-center bg-zinc-900 p-3 rounded text-green-400 font-bold">
+                <span>TOTAL EXPENDITURE:</span>
+                <span id="total-amount">\$0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchTransactions() {
+            const res = await fetch('/api/get_transactions');
+            const data = await res.json();
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            let total = 0;
+
+            data.transactions.forEach((tx, idx) => {
+                total += parseFloat(tx.amount);
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="text-zinc-500">${idx + 1}</td>
+                        <td>Fingerprint #${tx.fingerprint_id}</td>
+                        <td class="font-mono text-zinc-400">${tx.card_uid}</td>
+                        <td>${tx.category}</td>
+                        <td class="text-green-400 font-bold">$${parseFloat(tx.amount).toFixed(2)}</td>
+                        <td class="text-green-500">Approved 💵</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('total-amount').innerText = '\$' + total.toFixed(2);
+            if(data.latest_suggestion) {
+                document.getElementById('ml-suggestion').innerText = data.latest_suggestion;
+            }
+        }
+
+        setInterval(fetchTransactions, 2000);
+        fetchTransactions();
+    </script>
+</body>
+</html>
+"""
