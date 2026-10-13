@@ -1,78 +1,318 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Financial Behavior Guardian</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Financial Behavior Guardian</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Default styling fallback if style.css is not present */
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #22c55e;
+      --border: #334155;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem;
+    }
+    header, section, footer {
+      max-width: 1100px;
+      margin: 0 auto 2rem auto;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    .eyebrow {
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .pill {
+      background: #166534;
+      color: #4ade80;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .stat, .panel {
+      background: var(--card-bg);
+      padding: 1.25rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .stat span { display: block; color: var(--muted); font-size: 0.875rem; }
+    .stat strong { display: block; font-size: 1.5rem; margin: 0.5rem 0; color: #fff; }
+    .stat small { color: var(--muted); font-size: 0.75rem; }
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .entry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+    label { display: flex; flex-direction: column; font-size: 0.85rem; color: var(--muted); gap: 0.25rem; }
+    input, select, button {
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: #fff;
+    }
+    button.primary {
+      background: var(--accent);
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 1rem; }
+    th, td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-size: 0.85rem; }
+    .tag { background: #334155; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; }
+    .bar-label { display: flex; justify-content: space-between; margin-top: 0.75rem; font-size: 0.9rem; }
+    .bar { background: #334155; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 0.25rem; }
+    .bar i { display: block; height: 100%; background: var(--accent); }
+    .disclaimer { font-size: 0.75rem; color: var(--muted); margin-top: 1rem; }
+    footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-top: 1rem; }
+  </style>
 </head>
 <body>
+
 <header class="topbar">
-  <div><div class="eyebrow">PERSONAL FINANCE · AI PROJECT</div><h1>Financial Behavior <span>Guardian</span></h1><p>Understand your habits. Spend with intention.</p></div>
+  <div>
+    <div class="eyebrow">PERSONAL FINANCE · AI PROJECT</div>
+    <h1>Financial Behavior <span>Guardian</span></h1>
+    <p>Understand your habits. Spend with intention.</p>
+  </div>
   <div class="pill">● Local prototype</div>
 </header>
+
 <main>
-{% with messages=get_flashed_messages(with_categories=true) %}{% if messages %}<section class="messages">{% for cat,msg in messages %}<div class="notice {{cat}}">{{msg}}</div>{% endfor %}</section>{% endif %}{% endwith %}
-<section class="stats">
-  <article class="stat"><span>Total expenses</span><strong>₹ {{ "%.2f"|format(insights.total_expenses) }}</strong><small>Recorded spending</small></article>
-  <article class="stat"><span>Total income</span><strong>₹ {{ "%.2f"|format(insights.total_income) }}</strong><small>Recorded income</small></article>
-  <article class="stat"><span>Net balance</span><strong>₹ {{ "%.2f"|format(insights.balance) }}</strong><small>Income minus expenses</small></article>
-  <article class="stat"><span>Transactions</span><strong>{{ insights.transaction_count }}</strong><small>Saved records</small></article>
-</section>
-<section class="panel">
- <div class="section-head"><div><div class="eyebrow">YOUR MONEY, YOUR DATA</div><h2>Expense ledger</h2></div><span class="hint">Excel-style rows & columns</span></div>
- <form class="entry-grid" method="post" action="/transactions">
-  <label>Date<input type="date" name="txn_date" required value="{{ '' }}"></label>
-  <label>Description<input name="description" placeholder="e.g. Lunch, bus pass" required></label>
-  <label>Category<select name="category"><option>Food</option><option>Transport</option><option>Shopping</option><option>Bills</option><option>Education</option><option>Health</option><option>Entertainment</option><option>Rent</option><option>Investment</option><option>Other</option></select></label>
-  <label>Amount (₹)<input type="number" min="0" step="0.01" name="amount" placeholder="0.00" required></label>
-  <label>Type<select name="txn_type"><option value="expense">Expense</option><option value="income">Income</option></select></label>
-  <label>Person (optional)<select name="person_id"><option value="">Not linked</option>{% for p in people %}<option value="{{p.id}}">{{p.name}}</option>{% endfor %}</select></label>
-  <label>Card (optional)<select name="card_uid"><option value="">No card</option>{% for c in cards %}<option value="{{c.card_uid}}">{{c.person_name}} · {{c.nickname}}</option>{% endfor %}</select></label>
-  <label>Notes<input name="notes" placeholder="Optional note"></label>
-  <button class="primary" type="submit">＋ Add transaction</button>
- </form>
- <div class="table-wrap"><table><thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th>Card</th><th>Amount (₹)</th><th>Notes</th></tr></thead><tbody>
- {% for t in transactions %}<tr><td>{{t.txn_date}}</td><td>{{t.description}}</td><td><span class="tag">{{t.category}}</span></td><td>{{t.txn_type}}</td><td>{{t.card_uid or "—"}}</td><td class="amount">₹ {{ "%.2f"|format(t.amount) }}</td><td>{{t.notes or ""}}</td></tr>{% else %}<tr><td colspan="7" class="empty">No transactions yet. Add your first expense above.</td></tr>{% endfor %}
- </tbody></table></div>
- <div class="table-footer">Showing latest 500 transactions · Data is stored in your local SQLite database.</div>
-</section>
-<section class="two-col">
- <section class="panel">
-  <div class="eyebrow">PERSONALIZED INSIGHTS</div><h2>Spending coach</h2>
-  {% if insights.tips %}<ul class="tips">{% for tip in insights.tips %}<li>💰 {{tip}}</li>{% endfor %}</ul>{% else %}<p class="muted">Add transactions to receive suggestions.</p>{% endif %}
-  <h3>Spending by category</h3>
-  {% for c in insights.category_totals %}<div class="bar-label"><span>{{c.category}}</span><b>₹ {{ "%.2f"|format(c.amount) }}</b></div><div class="bar"><i style="width:{{ (c.amount / (insights.total_expenses if insights.total_expenses else 1) * 100)|round(1) }}%"></i></div>{% else %}<p class="muted">Your category totals will appear here.</p>{% endfor %}
-  <p class="disclaimer">Suggestions are based on recorded transactions and simple rules; they are educational, not professional financial advice.</p>
- </section>
- <section class="panel">
-  <div class="eyebrow">IMPORT / EXPORT</div><h2>Bring your data</h2>
-  <p class="muted">Upload a CSV with Date, Description, Amount and optionally Category and Type. In Excel, use Save As → CSV UTF-8.</p>
-  <form action="/upload" method="post" enctype="multipart/form-data" class="upload"><input type="file" name="file" accept=".csv" required><button class="secondary">Upload CSV</button></form>
-  <p class="muted small">Tip: keep Amount as a positive number. Use Type = income or credit for income; other values are treated as expenses.</p>
-  <button class="secondary" onclick="window.location='/api/insights'">View insights JSON</button>
- </section>
-</section>
-<section class="panel">
- <div class="section-head"><div><div class="eyebrow">HARDWARE LINK</div><h2>People & RFID cards</h2></div><span class="hint">Maximum 3 cards per person</span></div>
- <div class="two-col">
-  <form method="post" action="/people" class="stack-form">
-   <h3>1. Register person</h3><label>Person name<input name="name" required placeholder="e.g. User 1"></label>
-   <label>Fingerprint template ID<input name="fingerprint_id" type="number" min="1" max="127" required placeholder="e.g. 1"></label>
-   <button class="primary">Register person</button>
-   <p class="small muted">First enroll this finger on the R307S sensor using the included enrollment sketch. Then use that same numeric template ID here.</p>
-  </form>
-  <form method="post" action="/cards" class="stack-form">
-   <h3>2. Link an RFID card</h3><label>Person<select name="person_id" required>{% for p in people %}<option value="{{p.id}}">{{p.name}} (finger ID {{p.fingerprint_id}})</option>{% endfor %}</select></label>
-   <label>Card UID<input name="card_uid" required placeholder="Read UID from Serial Monitor"></label>
-   <label>Card nickname<input name="nickname" placeholder="e.g. Daily card"></label>
-   <button class="primary">Link card</button>
-  </form>
- </div>
- <div class="table-wrap"><table><thead><tr><th>Person</th><th>Fingerprint ID</th><th>Card nickname</th><th>Card UID</th><th>Action</th></tr></thead><tbody>
- {% for c in cards %}<tr><td>{{c.person_name}}</td><td>{{c.fingerprint_id}}</td><td>{{c.nickname}}</td><td>{{c.card_uid}}</td><td><form method="post" action="/cards/delete/{{c.id}}" onsubmit="return confirm('Remove this card?')"><button class="danger small-btn">Remove</button></form></td></tr>{% else %}<tr><td colspan="5" class="empty">No cards linked yet.</td></tr>{% endfor %}
- </tbody></table></div>
- <p class="disclaimer">This demo verifies an RFID UID and fingerprint template ID. It does not read or store real bank-card numbers, CVVs, PINs or payment credentials. Use only test RFID cards.</p>
-</section>
-<footer>Built for learning · White / black / green · Keep this demo on a trusted local network.</footer>
+  <!-- STATS OVERVIEW -->
+  <section class="stats">
+    <article class="stat">
+      <span>Total expenses</span>
+      <strong>₹ 12,450.00</strong>
+      <small>Recorded spending</small>
+    </article>
+    <article class="stat">
+      <span>Total income</span>
+      <strong>₹ 45,000.00</strong>
+      <small>Recorded income</small>
+    </article>
+    <article class="stat">
+      <span>Net balance</span>
+      <strong>₹ 32,550.00</strong>
+      <small>Income minus expenses</small>
+    </article>
+    <article class="stat">
+      <span>Transactions</span>
+      <strong>14</strong>
+      <small>Saved records</small>
+    </article>
+  </section>
+
+  <!-- EXPENSE LEDGER PANEL -->
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">YOUR MONEY, YOUR DATA</div>
+        <h2>Expense ledger</h2>
+      </div>
+      <span class="hint">Excel-style rows & columns</span>
+    </div>
+
+    <form class="entry-grid" onsubmit="event.preventDefault();">
+      <label>Date<input type="date" name="txn_date" required></label>
+      <label>Description<input name="description" placeholder="e.g. Lunch, bus pass" required></label>
+      <label>Category
+        <select name="category">
+          <option>Food</option>
+          <option>Transport</option>
+          <option>Shopping</option>
+          <option>Bills</option>
+          <option>Education</option>
+          <option>Health</option>
+          <option>Entertainment</option>
+          <option>Rent</option>
+          <option>Investment</option>
+          <option>Other</option>
+        </select>
+      </label>
+      <label>Amount (₹)<input type="number" min="0" step="0.01" name="amount" placeholder="0.00" required></label>
+      <label>Type
+        <select name="txn_type">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+      </label>
+      <label>Person (optional)
+        <select name="person_id">
+          <option value="">Not linked</option>
+          <option value="1">User 1</option>
+        </select>
+      </label>
+      <label>Card (optional)
+        <select name="card_uid">
+          <option value="">No card</option>
+          <option value="CARD_01">User 1 · Daily Card</option>
+        </select>
+      </label>
+      <label>Notes<input name="notes" placeholder="Optional note"></label>
+      <button class="primary" type="submit">＋ Add transaction</button>
+    </form>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th>Card</th>
+            <th>Amount (₹)</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2026-03-28</td>
+            <td>Grocery Shopping</td>
+            <td><span class="tag">Food</span></td>
+            <td>Expense</td>
+            <td>CARD_01</td>
+            <td class="amount">₹ 1,250.00</td>
+            <td>Weekly supplies</td>
+          </tr>
+          <tr>
+            <td>2026-03-27</td>
+            <td>Monthly Salary</td>
+            <td><span class="tag">Income</span></td>
+            <td>Income</td>
+            <td>—</td>
+            <td class="amount">₹ 45,000.00</td>
+            <td>Direct deposit</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-footer">Showing latest transactions · Data stored in SQLite database.</div>
+  </section>
+
+  <!-- INSIGHTS & IMPORT PANEL -->
+  <section class="two-col">
+    <section class="panel">
+      <div class="eyebrow">PERSONALIZED INSIGHTS</div>
+      <h2>Spending coach</h2>
+      <ul class="tips">
+        <li>💰 You spent 35% of your food budget this week. Good tracking!</li>
+        <li>💰 Regular savings goal is on track.</li>
+      </ul>
+      
+      <h3>Spending by category</h3>
+      <div class="bar-label"><span>Food</span><b>₹ 4,200.00</b></div>
+      <div class="bar"><i style="width: 45%;"></i></div>
+
+      <div class="bar-label"><span>Shopping</span><b>₹ 3,100.00</b></div>
+      <div class="bar"><i style="width: 30%;"></i></div>
+
+      <div class="bar-label"><span>Transport</span><b>₹ 1,500.00</b></div>
+      <div class="bar"><i style="width: 15%;"></i></div>
+
+      <p class="disclaimer">Suggestions are based on recorded transactions and simple rules; they are educational, not professional financial advice.</p>
+    </section>
+
+    <section class="panel">
+      <div class="eyebrow">IMPORT / EXPORT</div>
+      <h2>Bring your data</h2>
+      <p class="muted">Upload a CSV with Date, Description, Amount and optionally Category and Type.</p>
+      <form onsubmit="event.preventDefault();" class="upload">
+        <input type="file" name="file" accept=".csv" required>
+        <button type="button" class="secondary">Upload CSV</button>
+      </form>
+      <p class="muted small">Tip: keep Amount as a positive number.</p>
+    </section>
+  </section>
+
+  <!-- HARDWARE LINK PANEL -->
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">HARDWARE LINK</div>
+        <h2>People & RFID cards</h2>
+      </div>
+      <span class="hint">Maximum 3 cards per person</span>
+    </div>
+
+    <div class="two-col">
+      <form onsubmit="event.preventDefault();" class="stack-form">
+        <h3>1. Register person</h3>
+        <label>Person name<input name="name" required placeholder="e.g. User 1"></label>
+        <label>Fingerprint template ID<input name="fingerprint_id" type="number" min="1" max="127" required placeholder="e.g. 1"></label>
+        <button class="primary">Register person</button>
+      </form>
+
+      <form onsubmit="event.preventDefault();" class="stack-form">
+        <h3>2. Link an RFID card</h3>
+        <label>Person
+          <select name="person_id" required>
+            <option value="1">User 1 (finger ID 1)</option>
+          </select>
+        </label>
+        <label>Card UID<input name="card_uid" required placeholder="Read UID from Serial Monitor"></label>
+        <label>Card nickname<input name="nickname" placeholder="e.g. Daily card"></label>
+        <button class="primary">Link card</button>
+      </form>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Person</th>
+            <th>Fingerprint ID</th>
+            <th>Card nickname</th>
+            <th>Card UID</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>User 1</td>
+            <td>1</td>
+            <td>Daily card</td>
+            <td>CARD_01</td>
+            <td><button class="danger small-btn">Remove</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Built for learning · White / black / green · Keep this demo on a trusted local network.</footer>
 </main>
-</body></html>
+
+</body>
+</html>
